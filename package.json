@@ -32,7 +32,7 @@
     {
       "name": "pomodo-accomplishments",
       "title": "Accomplishments",
-      "subtitle": "Latest focus session",
+      "subtitle": "View all your focus session accomplishments",
       "description": "View what you accomplished in your last focus session.",
       "mode": "view"
     }

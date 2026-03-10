@@ -1,10 +1,10 @@
 import { Icon, List } from "@raycast/api";
-import { getLastAccomplishments } from "./lib/timer";
+import { getAccomplishmentEntries, formatAccomplishmentDate } from "./lib/timer";
 
 export default function Command() {
-  const accomplishments = getLastAccomplishments();
+  const entries = getAccomplishmentEntries();
 
-  if (accomplishments.length === 0) {
+  if (entries.length === 0) {
     return (
       <List>
         <List.EmptyView
@@ -18,11 +18,17 @@ export default function Command() {
 
   return (
     <List>
-      <List.Section title="Latest accomplishments">
-        {accomplishments.map((accomplishment, index) => (
-          <List.Item key={index} icon={Icon.Checkmark} title={accomplishment} />
-        ))}
-      </List.Section>
+      {entries.map((entry) => (
+        <List.Section key={entry.timestamp} title={formatAccomplishmentDate(entry.timestamp)}>
+          {entry.accomplishments.map((accomplishment, index) => (
+            <List.Item
+              key={`${entry.timestamp}-${index}`}
+              icon={Icon.Checkmark}
+              title={accomplishment}
+            />
+          ))}
+        </List.Section>
+      ))}
     </List>
   );
 }

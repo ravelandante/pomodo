@@ -128,17 +128,17 @@ export default function Command() {
             </>
           )}
           <MenuBarExtra.Item
-            title={`Focus — ${TIMER_DURATIONS.focus / 60} min`}
+            title={`Focus — ${formatTime(TIMER_DURATIONS.focus)}`}
             icon={Icon.Bolt}
             onAction={handleStartFocus}
           />
           <MenuBarExtra.Item
-            title={`Short Break — ${TIMER_DURATIONS.break / 60} min`}
+            title={`Short Break — ${formatTime(TIMER_DURATIONS.break)}`}
             icon={Icon.MugSteam}
             onAction={handleStartBreak}
           />
           <MenuBarExtra.Item
-            title={`Long Break — ${TIMER_DURATIONS.longBreak / 60} min`}
+            title={`Long Break — ${formatTime(TIMER_DURATIONS.longBreak)}`}
             icon={Icon.Heart}
             onAction={handleStartLongBreak}
           />

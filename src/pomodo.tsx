@@ -137,7 +137,7 @@ export default function Command() {
           />
           <MenuBarExtra.Item
             title={`Short Break — ${TIMER_DURATIONS.break / 60} min`}
-            icon={Icon.Heart}
+            icon={Icon.MugSteam}
             onAction={handleStartBreak}
           />
           <MenuBarExtra.Item

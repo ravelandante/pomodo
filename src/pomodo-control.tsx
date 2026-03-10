@@ -2,23 +2,92 @@ import {
   Action,
   ActionPanel,
   closeMainWindow,
+  Form,
   Detail,
   Icon,
   List,
   showToast,
   Toast,
 } from "@raycast/api";
+import { useState, type ReactNode } from "react";
+import { useForm } from "@raycast/utils";
 import {
   loadTimerState,
   resetTimer,
   resumeTimer,
   startTimer,
   pauseTimer,
+  saveAccomplishments,
   TIMER_DURATIONS,
   TIMER_LABELS,
   type TimerAction,
   type TimerType,
 } from "./lib/timer";
+
+interface AccomplishmentFormValues {
+  accomplishments: string;
+}
+
+function CompletedFocusForm({
+  timerType,
+  completionActions,
+}: {
+  timerType: TimerType;
+  completionActions: ReactNode;
+}) {
+  const [submitted, setSubmitted] = useState(false);
+  const [savedAccomplishments, setSavedAccomplishments] = useState<string[]>([]);
+
+  const { handleSubmit, itemProps } = useForm<AccomplishmentFormValues>({
+    initialValues: { accomplishments: "" },
+    onSubmit(values) {
+      const lines = values.accomplishments
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      saveAccomplishments(lines);
+      setSavedAccomplishments(lines);
+      setSubmitted(true);
+      showToast({ style: Toast.Style.Success, title: "Accomplishments saved" });
+    },
+  });
+
+  if (submitted) {
+    const label = TIMER_LABELS[timerType];
+    const accomplishmentsMarkdown =
+      savedAccomplishments.length > 0
+        ? `\n\n**What you accomplished:**\n${savedAccomplishments.map((a) => `- ${a}`).join("\n")}`
+        : "";
+    return (
+      <Detail
+        markdown={`# Timer Completed\n\n**${label}** session finished.${accomplishmentsMarkdown}`}
+        actions={completionActions}
+      />
+    );
+  }
+
+  return (
+    <Form
+      actions={
+        <ActionPanel>
+          <Action.SubmitForm title="Submit" onSubmit={handleSubmit} />
+        </ActionPanel>
+      }
+    >
+      <Form.Description
+        title="Focus session completed"
+        text={`${TIMER_LABELS[timerType]} session finished. What did you accomplish?`}
+      />
+      <Form.TextArea
+        {...itemProps.accomplishments}
+        id="accomplishments"
+        title="Accomplishments"
+        placeholder="One item per line — press Enter to add more"
+        info="Type what you accomplished, then press Enter for a new line. Add as many as you want. Press ⌘↵ to submit."
+      />
+    </Form>
+  );
+}
 
 const ACTION_LABELS: Record<TimerAction, string> = {
   "start-focus": "Start Focus (25 min)",
@@ -70,37 +139,43 @@ export default function Command(props: {
 
   if (completed && completedTimerType) {
     const label = TIMER_LABELS[completedTimerType];
+    const completionActions = (
+      <ActionPanel>
+        <Action
+          title="Start Focus"
+          icon={Icon.Bolt}
+          onAction={() => {
+            startTimer(TIMER_DURATIONS.focus, "focus");
+            closeMainWindow();
+          }}
+        />
+        <Action
+          title="Start Short Break"
+          icon={Icon.Heart}
+          onAction={() => {
+            startTimer(TIMER_DURATIONS.break, "break");
+            closeMainWindow();
+          }}
+        />
+        <Action
+          title="Start Long Break"
+          icon={Icon.Heart}
+          onAction={() => {
+            startTimer(TIMER_DURATIONS.longBreak, "longBreak");
+            closeMainWindow();
+          }}
+        />
+      </ActionPanel>
+    );
+
+    if (completedTimerType === "focus") {
+      return <CompletedFocusForm timerType={completedTimerType} completionActions={completionActions} />;
+    }
+
     return (
       <Detail
         markdown={`# Timer Completed\n\n**${label}** session finished.`}
-        actions={
-          <ActionPanel>
-            <Action
-              title="Start Focus"
-              icon={Icon.Bolt}
-              onAction={() => {
-                startTimer(TIMER_DURATIONS.focus, "focus");
-                closeMainWindow();
-              }}
-            />
-            <Action
-              title="Start Short Break"
-              icon={Icon.Heart}
-              onAction={() => {
-                startTimer(TIMER_DURATIONS.break, "break");
-                closeMainWindow();
-              }}
-            />
-            <Action
-              title="Start Long Break"
-              icon={Icon.Heart}
-              onAction={() => {
-                startTimer(TIMER_DURATIONS.longBreak, "longBreak");
-                closeMainWindow();
-              }}
-            />
-          </ActionPanel>
-        }
+        actions={completionActions}
       />
     );
   }

@@ -35,6 +35,7 @@ const STORAGE_KEYS = {
   endTimestamp: "pomodo-end-timestamp",
   isRunning: "pomodo-is-running",
   timerType: "pomodo-timer-type",
+  lastAccomplishments: "pomodo-last-accomplishments",
 };
 
 const cache = new Cache({ namespace: "pomodo-timer" });
@@ -121,4 +122,19 @@ export function isTimerCompleted(): boolean {
   const endTs = getEndTimestamp();
   if (typeof endTs !== "number") return false;
   return Math.floor(Date.now() / 1000) >= endTs;
+}
+
+export function saveAccomplishments(accomplishments: string[]): void {
+  cache.set(STORAGE_KEYS.lastAccomplishments, JSON.stringify(accomplishments));
+}
+
+export function getLastAccomplishments(): string[] {
+  const raw = getCached(STORAGE_KEYS.lastAccomplishments, (s) => s);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
 }

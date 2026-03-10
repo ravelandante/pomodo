@@ -143,6 +143,7 @@ export default function Command() {
                 icon={Icon.PlayFilled}
                 onAction={resumeTimer}
               />
+              <MenuBarExtra.Item title="Reset" icon={Icon.RotateClockwise} onAction={resetTimer} />
               <MenuBarExtra.Separator />
             </>
           )}

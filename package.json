@@ -28,6 +28,13 @@
       "subtitle": "Start, pause, or reset",
       "description": "Control the Pomodoro timer.",
       "mode": "view"
+    },
+    {
+      "name": "pomodo-accomplishments",
+      "title": "Accomplishments",
+      "subtitle": "Latest focus session",
+      "description": "View what you accomplished in your last focus session.",
+      "mode": "view"
     }
   ],
   "dependencies": {

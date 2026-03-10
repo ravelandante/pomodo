@@ -174,8 +174,8 @@ export default function Command() {
             onAction={() => startTimerByType("focus")}
           />
           <MenuBarExtra.Item
-            title={`Break — 5 min`}
-            icon={Icon.Heart}
+            title={`Short Break — 5 min`}
+            icon={Icon.MugSteam}
             onAction={() => startTimerByType("break")}
           />
           <MenuBarExtra.Item

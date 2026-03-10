@@ -29,10 +29,10 @@ function formatTime(seconds: number): string {
 }
 
 export default function Command() {
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(TIMER_DURATIONS.focus);
-  const [isRunning, setIsRunning] = useState(false);
-  const [timerType, setTimerType] = useState<TimerType>("focus");
-  const [isLoading, setIsLoading] = useState(true);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [isRunning, setIsRunning] = useState<boolean | null>(null);
+  const [timerType, setTimerType] = useState<TimerType | null>(null);
+  const isLoading = remainingSeconds === null || isRunning === null;
 
   // Load persisted state and compute current remaining time
   useEffect(() => {
@@ -64,8 +64,10 @@ export default function Command() {
         setRemainingSeconds(remaining);
         setIsRunning(running);
         setTimerType(type);
-      } finally {
-        setIsLoading(false);
+      } catch {
+        setRemainingSeconds(TIMER_DURATIONS.focus);
+        setIsRunning(false);
+        setTimerType("focus");
       }
     })();
   }, []);
@@ -96,6 +98,7 @@ export default function Command() {
   };
 
   const pauseTimer = async () => {
+    if (remainingSeconds === null) return;
     await Promise.all([
       LocalStorage.setItem(STORAGE_KEYS.remainingSeconds, remainingSeconds),
       LocalStorage.setItem(STORAGE_KEYS.isRunning, false),
@@ -105,6 +108,7 @@ export default function Command() {
   };
 
   const resumeTimer = async () => {
+    if (remainingSeconds === null) return;
     await startTimer(remainingSeconds);
     refreshMenuBar();
   };
@@ -119,11 +123,19 @@ export default function Command() {
     refreshMenuBar();
   };
 
+  if (isLoading) {
+    return (
+      <MenuBarExtra icon={Icon.Clock} isLoading={true}>
+        <MenuBarExtra.Item title="Loading…" />
+      </MenuBarExtra>
+    );
+  }
+
   const displayTitle = formatTime(remainingSeconds);
   const hasActiveTimer = isRunning || remainingSeconds > 0;
   const tooltip = hasActiveTimer
     ? isRunning
-      ? `${TIMER_LABELS[timerType]}: ${displayTitle} remaining`
+      ? `${TIMER_LABELS[timerType!]}: ${displayTitle} remaining`
       : `Paused — ${displayTitle} remaining`
     : "Pomodoro timer";
 
@@ -132,12 +144,11 @@ export default function Command() {
       icon={Icon.Clock}
       title={hasActiveTimer ? displayTitle : undefined}
       tooltip={tooltip}
-      isLoading={isLoading}
     >
       {isRunning ? (
         <>
           <MenuBarExtra.Item
-            title={`${TIMER_LABELS[timerType]} — ${displayTitle}`}
+            title={`${TIMER_LABELS[timerType!]} — ${displayTitle}`}
             icon={Icon.Clock}
           />
           <MenuBarExtra.Separator />
@@ -146,10 +157,10 @@ export default function Command() {
         </>
       ) : (
         <>
-          {remainingSeconds > 0 && (
+          {remainingSeconds! > 0 && (
             <>
               <MenuBarExtra.Item
-                title={"Resume"}
+                title="Resume"
                 icon={Icon.PlayFilled}
                 onAction={resumeTimer}
               />

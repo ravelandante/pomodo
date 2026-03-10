@@ -1,5 +1,5 @@
 import { Icon, List } from "@raycast/api";
-import { getAccomplishmentEntries, formatAccomplishmentDate } from "./lib/timer";
+import { getAccomplishmentEntries, formatAccomplishmentDate } from "./lib/accomplishments";
 
 export default function Command() {
   const entries = getAccomplishmentEntries();

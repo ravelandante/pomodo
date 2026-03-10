@@ -17,12 +17,12 @@ import {
   resumeTimer,
   startTimer,
   pauseTimer,
-  saveAccomplishments,
   TIMER_DURATIONS,
   TIMER_LABELS,
   type TimerAction,
   type TimerType,
 } from "./lib/timer";
+import { saveAccomplishments } from "./lib/accomplishments";
 
 interface AccomplishmentFormValues {
   accomplishments: string;

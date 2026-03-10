@@ -1,4 +1,5 @@
 import { Cache, launchCommand, LaunchType } from "@raycast/api";
+import { disableDoNotDisturb, enableDoNotDisturb } from "./dnd";
 
 const MENU_BAR_COMMAND = "pomodo";
 
@@ -94,12 +95,19 @@ export function startTimer(duration: number, timerType: TimerType): void {
   cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(duration));
   cache.set(STORAGE_KEYS.isRunning, JSON.stringify(true));
   cache.set(STORAGE_KEYS.timerType, timerType);
+  if (timerType === "focus") {
+    enableDoNotDisturb();
+  }
   refreshMenuBar();
 }
 
 export function pauseTimer(remainingSeconds: number): void {
+  const timerType = getCached(STORAGE_KEYS.timerType, (s) => s as TimerType);
   cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(remainingSeconds));
   cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
+  if (timerType === "focus") {
+    disableDoNotDisturb();
+  }
   refreshMenuBar();
 }
 
@@ -108,8 +116,12 @@ export function resumeTimer(remainingSeconds: number, timerType: TimerType): voi
 }
 
 export function resetTimer(): void {
+  const timerType = getCached(STORAGE_KEYS.timerType, (s) => s as TimerType);
   cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(0));
   cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
+  if (timerType === "focus") {
+    disableDoNotDisturb();
+  }
   refreshMenuBar();
 }
 

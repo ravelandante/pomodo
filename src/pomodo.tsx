@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Icon, launchCommand, LaunchType, MenuBarExtra, showToast, Toast } from "@raycast/api";
+import { Icon, MenuBarExtra, showToast, Toast } from "@raycast/api";
 import {
   loadTimerState,
   formatTime,
@@ -47,46 +47,34 @@ export default function Command() {
     return () => clearInterval(interval);
   }, [state?.isRunning]);
 
-  const refreshMenuBar = () => {
-    setTimeout(() => {
-      launchCommand({ name: "pomodo", type: LaunchType.Background }).catch(() => {});
-    }, 400);
-  };
-
   const handleStartFocus = () => {
     startTimer(TIMER_DURATIONS.focus, "focus");
     setState(loadTimerState());
-    refreshMenuBar();
   };
 
   const handleStartBreak = () => {
     startTimer(TIMER_DURATIONS.break, "break");
     setState(loadTimerState());
-    refreshMenuBar();
   };
 
   const handleStartLongBreak = () => {
     startTimer(TIMER_DURATIONS.longBreak, "longBreak");
     setState(loadTimerState());
-    refreshMenuBar();
   };
 
   const handlePause = () => {
     pauseTimer(state!.remainingSeconds);
     setState(loadTimerState());
-    refreshMenuBar();
   };
 
   const handleResume = () => {
     resumeTimer(state!.remainingSeconds, state!.timerType);
     setState(loadTimerState());
-    refreshMenuBar();
   };
 
   const handleReset = () => {
     resetTimer();
     setState(loadTimerState());
-    refreshMenuBar();
   };
 
   if (isLoading) {

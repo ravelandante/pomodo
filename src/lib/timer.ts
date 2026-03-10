@@ -1,4 +1,12 @@
-import { Cache } from "@raycast/api";
+import { Cache, launchCommand, LaunchType } from "@raycast/api";
+
+const MENU_BAR_COMMAND = "pomodo";
+
+function refreshMenuBar(): void {
+  setTimeout(() => {
+    launchCommand({ name: MENU_BAR_COMMAND, type: LaunchType.Background }).catch(() => {});
+  }, 400);
+}
 
 export type TimerType = "focus" | "break" | "longBreak";
 
@@ -86,11 +94,13 @@ export function startTimer(duration: number, timerType: TimerType): void {
   cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(duration));
   cache.set(STORAGE_KEYS.isRunning, JSON.stringify(true));
   cache.set(STORAGE_KEYS.timerType, timerType);
+  refreshMenuBar();
 }
 
 export function pauseTimer(remainingSeconds: number): void {
   cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(remainingSeconds));
   cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
+  refreshMenuBar();
 }
 
 export function resumeTimer(remainingSeconds: number, timerType: TimerType): void {
@@ -100,6 +110,7 @@ export function resumeTimer(remainingSeconds: number, timerType: TimerType): voi
 export function resetTimer(): void {
   cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(0));
   cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
+  refreshMenuBar();
 }
 
 export function getEndTimestamp(): number | undefined {

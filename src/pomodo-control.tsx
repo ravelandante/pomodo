@@ -1,14 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  closeMainWindow,
-  Icon,
-  launchCommand,
-  LaunchType,
-  List,
-  showToast,
-  Toast,
-} from "@raycast/api";
+import { Action, ActionPanel, closeMainWindow, Icon, List, showToast, Toast } from "@raycast/api";
 import { useEffect } from "react";
 import {
   loadTimerState,
@@ -28,15 +18,6 @@ const ACTION_LABELS: Record<TimerAction, string> = {
   resume: "Resume",
   reset: "Reset",
 };
-
-function refreshMenuBar(): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      await launchCommand({ name: "pomodo", type: LaunchType.Background }).catch(() => {});
-      resolve();
-    }, 400);
-  });
-}
 
 async function executeAction(action: TimerAction) {
   const state = loadTimerState();
@@ -69,8 +50,6 @@ async function executeAction(action: TimerAction) {
       await showToast({ style: Toast.Style.Success, title: "Timer reset" });
       break;
   }
-
-  await refreshMenuBar();
 }
 
 export default function Command(props: { launchContext?: { action?: TimerAction } }) {

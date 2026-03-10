@@ -16,11 +16,18 @@
   "commands": [
     {
       "name": "pomodo",
-      "title": "pomodo",
-      "subtitle": "run pomodo",
-      "description": "",
+      "title": "Pomodo",
+      "subtitle": "Timer in menu bar",
+      "description": "Pomodoro timer in the menu bar",
       "mode": "menu-bar",
       "interval": "10s"
+    },
+    {
+      "name": "pomodo-control",
+      "title": "Control Timer",
+      "subtitle": "Start, pause, or reset",
+      "description": "Control the Pomodoro timer",
+      "mode": "view"
     }
   ],
   "dependencies": {

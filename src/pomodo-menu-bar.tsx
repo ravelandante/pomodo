@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Icon, launchCommand, LaunchType, MenuBarExtra } from "@raycast/api";
+import { Icon, Image, launchCommand, LaunchType, MenuBarExtra } from "@raycast/api";
 import {
   loadTimerState,
   formatTime,
@@ -9,7 +9,14 @@ import {
   resetTimer,
   TIMER_LABELS,
   TIMER_DURATIONS,
+  type TimerType,
 } from "./lib/timer";
+
+const SESSION_ICONS: Record<TimerType, Image.ImageLike> = {
+  focus: Icon.Bolt,
+  break: Icon.MugSteam,
+  longBreak: Icon.Heart,
+};
 
 export default function Command() {
   const [state, setState] = useState<ReturnType<typeof loadTimerState> | null>(null);
@@ -88,6 +95,7 @@ export default function Command() {
 
   const displayTitle = formatTime(state!.remainingSeconds);
   const hasActiveTimer = state!.isRunning || state!.remainingSeconds > 0;
+  const menuBarIcon = hasActiveTimer ? SESSION_ICONS[state!.timerType] : Icon.Clock;
   const tooltip = hasActiveTimer
     ? state!.isRunning
       ? `${TIMER_LABELS[state!.timerType]}: ${displayTitle} remaining`
@@ -96,7 +104,7 @@ export default function Command() {
 
   return (
     <MenuBarExtra
-      icon={Icon.Clock}
+      icon={menuBarIcon}
       title={hasActiveTimer ? displayTitle : undefined}
       tooltip={tooltip}
     >

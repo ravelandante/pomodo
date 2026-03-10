@@ -83,8 +83,8 @@ export default function Command() {
     setIsRunning(true);
   };
 
-  const refreshMenuBar = () => {
-    launchCommand({ name: "pomodo", type: LaunchType.Background }).catch(() => {
+  const refreshMenuBar = async () => {
+    await launchCommand({ name: "pomodo", type: LaunchType.Background }).catch(() => {
       // Ignore if command fails to launch (e.g. during development)
     });
   };
@@ -94,7 +94,7 @@ export default function Command() {
     await LocalStorage.setItem(STORAGE_KEYS.timerType, type);
     setTimerType(type);
     await startTimer(duration);
-    refreshMenuBar();
+    await refreshMenuBar();
   };
 
   const pauseTimer = async () => {
@@ -104,13 +104,13 @@ export default function Command() {
       LocalStorage.setItem(STORAGE_KEYS.isRunning, false),
     ]);
     setIsRunning(false);
-    refreshMenuBar();
+    await refreshMenuBar();
   };
 
   const resumeTimer = async () => {
     if (remainingSeconds === null) return;
     await startTimer(remainingSeconds);
-    refreshMenuBar();
+    await refreshMenuBar();
   };
 
   const resetTimer = async () => {
@@ -120,7 +120,7 @@ export default function Command() {
     ]);
     setRemainingSeconds(0);
     setIsRunning(false);
-    refreshMenuBar();
+    await refreshMenuBar();
   };
 
   if (isLoading) {

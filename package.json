@@ -15,10 +15,10 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "pomodo",
+      "name": "pomodo-menu-bar",
       "title": "Pomodo",
-      "subtitle": "Timer in menu bar",
-      "description": "Pomodoro timer in the menu bar",
+      "subtitle": "Show Pomodo in the menu bar",
+      "description": "Show the Pomodoro timer in the menu bar.",
       "mode": "menu-bar",
       "interval": "10s"
     },
@@ -26,7 +26,7 @@
       "name": "pomodo-control",
       "title": "Control Timer",
       "subtitle": "Start, pause, or reset",
-      "description": "Control the Pomodoro timer",
+      "description": "Control the Pomodoro timer.",
       "mode": "view"
     }
   ],

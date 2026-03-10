@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Icon, launchCommand, LaunchType, LocalStorage, MenuBarExtra } from "@raycast/api";
+import { Icon, LocalStorage, MenuBarExtra } from "@raycast/api";
 
 type TimerType = "focus" | "break" | "longBreak";
 
@@ -83,18 +83,11 @@ export default function Command() {
     setIsRunning(true);
   };
 
-  const refreshMenuBar = async () => {
-    await launchCommand({ name: "pomodo", type: LaunchType.Background }).catch(() => {
-      // Ignore if command fails to launch (e.g. during development)
-    });
-  };
-
   const startTimerByType = async (type: TimerType) => {
     const duration = TIMER_DURATIONS[type];
     await LocalStorage.setItem(STORAGE_KEYS.timerType, type);
     setTimerType(type);
     await startTimer(duration);
-    await refreshMenuBar();
   };
 
   const pauseTimer = async () => {
@@ -104,13 +97,11 @@ export default function Command() {
       LocalStorage.setItem(STORAGE_KEYS.isRunning, false),
     ]);
     setIsRunning(false);
-    await refreshMenuBar();
   };
 
   const resumeTimer = async () => {
     if (remainingSeconds === null) return;
     await startTimer(remainingSeconds);
-    await refreshMenuBar();
   };
 
   const resetTimer = async () => {
@@ -120,7 +111,6 @@ export default function Command() {
     ]);
     setRemainingSeconds(0);
     setIsRunning(false);
-    await refreshMenuBar();
   };
 
   if (isLoading) {

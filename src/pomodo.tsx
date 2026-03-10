@@ -139,7 +139,7 @@ export default function Command() {
           {remainingSeconds > 0 && (
             <>
               <MenuBarExtra.Item
-                title={`Resume ${TIMER_LABELS[timerType]} — ${displayTitle}`}
+                title={"Resume"}
                 icon={Icon.PlayFilled}
                 onAction={resumeTimer}
               />

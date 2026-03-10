@@ -1,5 +1,13 @@
-import { Action, ActionPanel, closeMainWindow, Icon, List, showToast, Toast } from "@raycast/api";
-import { useEffect } from "react";
+import {
+  Action,
+  ActionPanel,
+  closeMainWindow,
+  Detail,
+  Icon,
+  List,
+  showToast,
+  Toast,
+} from "@raycast/api";
 import {
   loadTimerState,
   resetTimer,
@@ -7,7 +15,9 @@ import {
   startTimer,
   pauseTimer,
   TIMER_DURATIONS,
+  TIMER_LABELS,
   type TimerAction,
+  type TimerType,
 } from "./lib/timer";
 
 const ACTION_LABELS: Record<TimerAction, string> = {
@@ -52,20 +62,46 @@ async function executeAction(action: TimerAction) {
   }
 }
 
-export default function Command(props: { launchContext?: { action?: TimerAction } }) {
-  const contextAction = props.launchContext?.action;
+export default function Command(props: {
+  launchContext?: { action?: TimerAction; completed?: boolean; timerType?: TimerType };
+}) {
+  const completed = props.launchContext?.completed;
+  const completedTimerType = props.launchContext?.timerType;
 
-  useEffect(() => {
-    if (contextAction) {
-      executeAction(contextAction).then(() => closeMainWindow());
-    }
-  }, [contextAction]);
-
-  if (contextAction) {
+  if (completed && completedTimerType) {
+    const label = TIMER_LABELS[completedTimerType];
     return (
-      <List>
-        <List.Item title="Executing…" icon={Icon.Clock} />
-      </List>
+      <Detail
+        markdown={`# Timer Completed\n\n**${label}** session finished.`}
+        actions={
+          <ActionPanel>
+            <Action
+              title="Start Focus"
+              icon={Icon.Bolt}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.focus, "focus");
+                closeMainWindow();
+              }}
+            />
+            <Action
+              title="Start Short Break"
+              icon={Icon.Heart}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.break, "break");
+                closeMainWindow();
+              }}
+            />
+            <Action
+              title="Start Long Break"
+              icon={Icon.Heart}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.longBreak, "longBreak");
+                closeMainWindow();
+              }}
+            />
+          </ActionPanel>
+        }
+      />
     );
   }
 

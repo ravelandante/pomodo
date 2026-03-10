@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Icon, MenuBarExtra, showToast, Toast } from "@raycast/api";
+import { Icon, launchCommand, LaunchType, MenuBarExtra } from "@raycast/api";
 import {
   loadTimerState,
   formatTime,
@@ -18,12 +18,12 @@ export default function Command() {
   useEffect(() => {
     const loaded = loadTimerState();
     setState(loaded);
-
     if (loaded.isRunning && loaded.remainingSeconds <= 0) {
-      showToast({
-        style: Toast.Style.Success,
-        title: "Timer Completed",
-        message: `${TIMER_LABELS[loaded.timerType]} session finished`,
+      resetTimer();
+      launchCommand({
+        name: "pomodo-control",
+        type: LaunchType.UserInitiated,
+        context: { completed: true, timerType: loaded.timerType },
       });
     }
   }, []);
@@ -35,10 +35,11 @@ export default function Command() {
       const loaded = loadTimerState();
       if (loaded.remainingSeconds <= 0) {
         setState(loaded);
-        showToast({
-          style: Toast.Style.Success,
-          title: "Timer Completed",
-          message: `${TIMER_LABELS[loaded.timerType]} session finished`,
+        resetTimer();
+        launchCommand({
+          name: "pomodo-control",
+          type: LaunchType.UserInitiated,
+          context: { completed: true, timerType: loaded.timerType },
         });
       } else {
         setState(loaded);

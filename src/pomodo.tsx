@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Icon, LocalStorage, MenuBarExtra } from "@raycast/api";
+import { Cache, Icon, MenuBarExtra } from "@raycast/api";
 
 type TimerType = "focus" | "break" | "longBreak";
 
@@ -22,6 +22,18 @@ const STORAGE_KEYS = {
   timerType: "pomodo-timer-type",
 };
 
+const cache = new Cache({ namespace: "pomodo-timer" });
+
+function getCached<T>(key: string, parser: (s: string) => T): T | undefined {
+  const raw = cache.get(key);
+  if (raw === undefined) return undefined;
+  try {
+    return parser(raw) as T;
+  } catch {
+    return undefined;
+  }
+}
+
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -36,79 +48,72 @@ export default function Command() {
 
   // Load persisted state and compute current remaining time
   useEffect(() => {
-    (async () => {
-      try {
-        const [storedRemaining, storedEndTs, storedIsRunning, storedTimerType] = await Promise.all([
-          LocalStorage.getItem<number>(STORAGE_KEYS.remainingSeconds),
-          LocalStorage.getItem<number>(STORAGE_KEYS.endTimestamp),
-          LocalStorage.getItem<boolean>(STORAGE_KEYS.isRunning),
-          LocalStorage.getItem<TimerType>(STORAGE_KEYS.timerType),
-        ]);
+    try {
+      const storedRemaining = getCached(STORAGE_KEYS.remainingSeconds, (s) => JSON.parse(s) as number);
+      const storedEndTs = getCached(STORAGE_KEYS.endTimestamp, (s) => JSON.parse(s) as number);
+      const storedIsRunning = getCached(STORAGE_KEYS.isRunning, (s) => JSON.parse(s) as boolean);
+      const storedTimerType = getCached(STORAGE_KEYS.timerType, (s) => s as TimerType);
 
-        const running = storedIsRunning ?? false;
-        const type = storedTimerType ?? "focus";
-        let remaining: number;
+      const running = storedIsRunning ?? false;
+      const type: TimerType =
+        storedTimerType && ["focus", "break", "longBreak"].includes(storedTimerType)
+          ? storedTimerType
+          : "focus";
+      let remaining: number;
 
-        if (running && typeof storedEndTs === "number") {
-          const now = Math.floor(Date.now() / 1000);
-          remaining = Math.max(0, storedEndTs - now);
-          if (remaining <= 0) {
-            remaining = 0;
-            await LocalStorage.setItem(STORAGE_KEYS.isRunning, false);
-            setIsRunning(false);
-          }
-        } else {
-          remaining = typeof storedRemaining === "number" ? storedRemaining : TIMER_DURATIONS[type];
+      if (running && typeof storedEndTs === "number") {
+        const now = Math.floor(Date.now() / 1000);
+        remaining = Math.max(0, storedEndTs - now);
+        if (remaining <= 0) {
+          remaining = 0;
+          cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
+          setIsRunning(false);
         }
-
-        setRemainingSeconds(remaining);
-        setIsRunning(running);
-        setTimerType(type);
-      } catch {
-        setRemainingSeconds(TIMER_DURATIONS.focus);
-        setIsRunning(false);
-        setTimerType("focus");
+      } else {
+        remaining = typeof storedRemaining === "number" ? storedRemaining : TIMER_DURATIONS[type];
       }
-    })();
+
+      setRemainingSeconds(remaining);
+      setIsRunning(running);
+      setTimerType(type);
+    } catch {
+      setRemainingSeconds(TIMER_DURATIONS.focus);
+      setIsRunning(false);
+      setTimerType("focus");
+    }
   }, []);
 
-  const startTimer = async (duration: number) => {
+  const startTimer = (duration: number) => {
     const endTs = Math.floor(Date.now() / 1000) + duration;
-    await Promise.all([
-      LocalStorage.setItem(STORAGE_KEYS.endTimestamp, endTs),
-      LocalStorage.setItem(STORAGE_KEYS.remainingSeconds, duration),
-      LocalStorage.setItem(STORAGE_KEYS.isRunning, true),
-    ]);
+    cache.set(STORAGE_KEYS.endTimestamp, JSON.stringify(endTs));
+    cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(duration));
+    cache.set(STORAGE_KEYS.isRunning, JSON.stringify(true));
     setRemainingSeconds(duration);
     setIsRunning(true);
   };
 
-  const startTimerByType = async (type: TimerType) => {
+  const startTimerByType = (type: TimerType) => {
     const duration = TIMER_DURATIONS[type];
-    await LocalStorage.setItem(STORAGE_KEYS.timerType, type);
+    cache.set(STORAGE_KEYS.timerType, type);
     setTimerType(type);
-    await startTimer(duration);
+    startTimer(duration);
   };
 
-  const pauseTimer = async () => {
+  const pauseTimer = () => {
     if (remainingSeconds === null) return;
-    await Promise.all([
-      LocalStorage.setItem(STORAGE_KEYS.remainingSeconds, remainingSeconds),
-      LocalStorage.setItem(STORAGE_KEYS.isRunning, false),
-    ]);
+    cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(remainingSeconds));
+    cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
     setIsRunning(false);
   };
 
-  const resumeTimer = async () => {
+  const resumeTimer = () => {
     if (remainingSeconds === null) return;
-    await startTimer(remainingSeconds);
+    startTimer(remainingSeconds);
   };
 
-  const resetTimer = async () => {
-    await Promise.all([
-      LocalStorage.setItem(STORAGE_KEYS.remainingSeconds, 0),
-      LocalStorage.setItem(STORAGE_KEYS.isRunning, false),
-    ]);
+  const resetTimer = () => {
+    cache.set(STORAGE_KEYS.remainingSeconds, JSON.stringify(0));
+    cache.set(STORAGE_KEYS.isRunning, JSON.stringify(false));
     setRemainingSeconds(0);
     setIsRunning(false);
   };

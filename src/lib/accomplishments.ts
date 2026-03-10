@@ -58,6 +58,11 @@ export function getAccomplishmentEntries(): AccomplishmentEntry[] {
   return loadAccomplishmentEntries();
 }
 
+export function deleteAllAccomplishments(): void {
+  cache.remove(STORAGE_KEYS.accomplishmentsHistory);
+  cache.remove(STORAGE_KEYS.lastAccomplishments);
+}
+
 export function getLastAccomplishments(): string[] {
   const entries = loadAccomplishmentEntries();
   return entries[0]?.accomplishments ?? [];

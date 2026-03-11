@@ -1,14 +1,34 @@
-import { Action, ActionPanel, Alert, Detail, Icon, List, confirmAlert, showToast, Toast } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Alert,
+  Detail,
+  Icon,
+  List,
+  confirmAlert,
+  showToast,
+  Toast,
+  useNavigation,
+} from "@raycast/api";
 import { useState, type ReactNode } from "react";
 import {
   getAccomplishmentEntries,
   formatAccomplishmentDate,
   deleteAllAccomplishments,
   deleteItem,
+  deleteEntry,
   type AccomplishmentEntry,
 } from "./lib/accomplishments";
 
-function SessionDetail({ entry }: { entry: AccomplishmentEntry }) {
+function SessionDetail({
+  entry,
+  onDeleteSession,
+}: {
+  entry: AccomplishmentEntry;
+  onDeleteSession: (timestamp: number) => void;
+}) {
+  const { pop } = useNavigation();
+
   const dateStr = formatAccomplishmentDate(entry.timestamp);
   const learnings = entry.learnings ?? [];
   const accomplishmentsMarkdown =
@@ -19,7 +39,38 @@ function SessionDetail({ entry }: { entry: AccomplishmentEntry }) {
     learnings.length > 0 ? `\n\n## Learnings\n${learnings.map((l) => `- ${l}`).join("\n")}` : "";
   const markdown = `# ${dateStr}\n\n${accomplishmentsMarkdown}${learningsMarkdown}`;
 
-  return <Detail markdown={markdown} />;
+  async function handleDeleteSession() {
+    if (
+      !(await confirmAlert({
+        title: "Delete Session",
+        message: `This will permanently remove this session's accomplishments and learnings (${dateStr}). This cannot be undone.`,
+        primaryAction: {
+          title: "Delete",
+          style: Alert.ActionStyle.Destructive,
+        },
+      }))
+    ) {
+      return;
+    }
+    onDeleteSession(entry.timestamp);
+    pop();
+  }
+
+  return (
+    <Detail
+      markdown={markdown}
+      actions={
+        <ActionPanel>
+          <Action
+            icon={Icon.Trash}
+            title="Delete Session"
+            style={Action.Style.Destructive}
+            onAction={handleDeleteSession}
+          />
+        </ActionPanel>
+      }
+    />
+  );
 }
 
 export default function Command() {
@@ -29,6 +80,12 @@ export default function Command() {
     const nextEntries = deleteItem(timestamp, type, index);
     setEntries(nextEntries);
     await showToast({ style: Toast.Style.Success, title: "Deleted" });
+  }
+
+  function handleDeleteSession(timestamp: number) {
+    const nextEntries = deleteEntry(timestamp);
+    setEntries(nextEntries);
+    showToast({ style: Toast.Style.Success, title: "Session deleted" });
   }
 
   async function handleDeleteAll() {
@@ -79,7 +136,11 @@ export default function Command() {
                   title={accomplishment}
                   actions={
                     <ActionPanel>
-                      <Action.Push icon={Icon.Eye} title="View Session" target={<SessionDetail entry={entry} />} />
+                      <Action.Push
+                        icon={Icon.Eye}
+                        title="View Session"
+                        target={<SessionDetail entry={entry} onDeleteSession={handleDeleteSession} />}
+                      />
                       <Action
                         icon={Icon.Trash}
                         title="Delete"
@@ -110,7 +171,11 @@ export default function Command() {
                   title={learning}
                   actions={
                     <ActionPanel>
-                      <Action.Push icon={Icon.Eye} title="View Session" target={<SessionDetail entry={entry} />} />
+                      <Action.Push
+                        icon={Icon.Eye}
+                        title="View Session"
+                        target={<SessionDetail entry={entry} onDeleteSession={handleDeleteSession} />}
+                      />
                       <Action
                         icon={Icon.Trash}
                         title="Delete"

@@ -67,6 +67,12 @@ export function deleteAllAccomplishments(): void {
   cache.remove(STORAGE_KEYS.lastAccomplishments);
 }
 
+export function deleteEntry(timestamp: number): AccomplishmentEntry[] {
+  const entries = loadAccomplishmentEntries().filter((e) => e.timestamp !== timestamp);
+  cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(entries));
+  return entries;
+}
+
 export function deleteItem(
   timestamp: number,
   type: "accomplishment" | "learning",

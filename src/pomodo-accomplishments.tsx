@@ -8,7 +8,7 @@ import {
   showToast,
   Toast,
 } from "@raycast/api";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   getAccomplishmentEntries,
   formatAccomplishmentDate,
@@ -50,27 +50,62 @@ export default function Command() {
 
   return (
     <List>
-      {entries.map((entry) => (
-        <List.Section key={entry.timestamp} title={formatAccomplishmentDate(entry.timestamp)}>
-          {entry.accomplishments.map((accomplishment, index) => (
-            <List.Item
-              key={`${entry.timestamp}-${index}`}
-              icon={Icon.Checkmark}
-              title={accomplishment}
-              actions={
-                <ActionPanel>
-                  <Action
-                    icon={Icon.Trash}
-                    title="Delete All Accomplishments"
-                    style={Action.Style.Destructive}
-                    onAction={handleDeleteAll}
-                  />
-                </ActionPanel>
-              }
-            />
-          ))}
-        </List.Section>
-      ))}
+      {entries.flatMap((entry) => {
+        const timestamp = entry.timestamp;
+        const dateStr = formatAccomplishmentDate(timestamp);
+        const learnings = entry.learnings ?? [];
+        const sections: ReactNode[] = [];
+
+        if (entry.accomplishments.length > 0) {
+          sections.push(
+            <List.Section key={`${timestamp}-acc`} title={`${dateStr} — Accomplishments`}>
+              {entry.accomplishments.map((accomplishment, index) => (
+                <List.Item
+                  key={`${timestamp}-acc-${index}`}
+                  icon={Icon.Checkmark}
+                  title={accomplishment}
+                  actions={
+                    <ActionPanel>
+                      <Action
+                        icon={Icon.Trash}
+                        title="Delete All Accomplishments"
+                        style={Action.Style.Destructive}
+                        onAction={handleDeleteAll}
+                      />
+                    </ActionPanel>
+                  }
+                />
+              ))}
+            </List.Section>,
+          );
+        }
+
+        if (learnings.length > 0) {
+          sections.push(
+            <List.Section key={`${timestamp}-learn`} title={`${dateStr} — Learnings`}>
+              {learnings.map((learning, index) => (
+                <List.Item
+                  key={`${timestamp}-learn-${index}`}
+                  icon={Icon.LightBulb}
+                  title={learning}
+                  actions={
+                    <ActionPanel>
+                      <Action
+                        icon={Icon.Trash}
+                        title="Delete All Accomplishments"
+                        style={Action.Style.Destructive}
+                        onAction={handleDeleteAll}
+                      />
+                    </ActionPanel>
+                  }
+                />
+              ))}
+            </List.Section>,
+          );
+        }
+
+        return sections;
+      })}
     </List>
   );
 }

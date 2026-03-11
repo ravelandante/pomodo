@@ -11,16 +11,10 @@ function refreshMenuBar(): void {
 
 export type TimerType = "focus" | "break" | "longBreak";
 
-export type TimerAction =
-  | "start-focus"
-  | "start-break"
-  | "start-long-break"
-  | "pause"
-  | "resume"
-  | "reset";
+export type TimerAction = "start-focus" | "start-break" | "start-long-break" | "pause" | "resume" | "reset";
 
 export const TIMER_DURATIONS: Record<TimerType, number> = {
-  focus: 25 * 60,
+  focus: 3,
   break: 5 * 60,
   longBreak: 20 * 60,
 };
@@ -70,9 +64,7 @@ export function loadTimerState(): TimerState {
 
   const running = storedIsRunning ?? false;
   const type: TimerType =
-    storedTimerType && ["focus", "break", "longBreak"].includes(storedTimerType)
-      ? storedTimerType
-      : "focus";
+    storedTimerType && ["focus", "break", "longBreak"].includes(storedTimerType) ? storedTimerType : "focus";
   let remaining: number;
 
   if (running && typeof storedEndTs === "number") {

@@ -1,14 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  closeMainWindow,
-  Form,
-  Detail,
-  Icon,
-  List,
-  showToast,
-  Toast,
-} from "@raycast/api";
+import { Action, ActionPanel, closeMainWindow, Form, Detail, Icon, List, showToast, Toast } from "@raycast/api";
 import { useState, type ReactNode } from "react";
 import { useForm } from "@raycast/utils";
 import {
@@ -26,29 +16,30 @@ import { saveAccomplishments } from "./lib/accomplishments";
 
 interface AccomplishmentFormValues {
   accomplishments: string;
+  learnings: string;
 }
 
-function CompletedFocusForm({
-  timerType,
-  completionActions,
-}: {
-  timerType: TimerType;
-  completionActions: ReactNode;
-}) {
+function CompletedFocusForm({ timerType, completionActions }: { timerType: TimerType; completionActions: ReactNode }) {
   const [submitted, setSubmitted] = useState(false);
   const [savedAccomplishments, setSavedAccomplishments] = useState<string[]>([]);
+  const [savedLearnings, setSavedLearnings] = useState<string[]>([]);
 
   const { handleSubmit, itemProps } = useForm<AccomplishmentFormValues>({
-    initialValues: { accomplishments: "" },
+    initialValues: { accomplishments: "", learnings: "" },
     onSubmit(values) {
-      const lines = values.accomplishments
+      const accomplishmentLines = values.accomplishments
         .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
-      saveAccomplishments(lines);
-      setSavedAccomplishments(lines);
+      const learningLines = values.learnings
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      saveAccomplishments(accomplishmentLines, learningLines);
+      setSavedAccomplishments(accomplishmentLines);
+      setSavedLearnings(learningLines);
       setSubmitted(true);
-      showToast({ style: Toast.Style.Success, title: "Accomplishments saved" });
+      showToast({ style: Toast.Style.Success, title: "Accomplishments and learnings saved" });
     },
   });
 
@@ -58,9 +49,11 @@ function CompletedFocusForm({
       savedAccomplishments.length > 0
         ? `\n\n**What you accomplished:**\n${savedAccomplishments.map((a) => `- ${a}`).join("\n")}`
         : "";
+    const learningsMarkdown =
+      savedLearnings.length > 0 ? `\n\n**Learnings:**\n${savedLearnings.map((l) => `- ${l}`).join("\n")}` : "";
     return (
       <Detail
-        markdown={`# Timer Completed\n\n**${label}** session finished.${accomplishmentsMarkdown}`}
+        markdown={`# Timer Completed\n\n**${label}** session finished.${accomplishmentsMarkdown}${learningsMarkdown}`}
         actions={completionActions}
       />
     );
@@ -83,7 +76,14 @@ function CompletedFocusForm({
         id="accomplishments"
         title="Accomplishments"
         placeholder="One item per line — press Enter to add more"
-        info="Type what you accomplished, then press Enter for a new line. Add as many as you want. Press ⌘↵ to submit."
+        info="What you accomplished. Separate each item with a new line."
+      />
+      <Form.TextArea
+        {...itemProps.learnings}
+        id="learnings"
+        title="Learnings"
+        placeholder="One item per line — press Enter to add more"
+        info="What you learned. Separate each item with a new line."
       />
     </Form>
   );
@@ -172,12 +172,7 @@ export default function Command(props: {
       return <CompletedFocusForm timerType={completedTimerType} completionActions={completionActions} />;
     }
 
-    return (
-      <Detail
-        markdown={`# Timer Completed\n\n**${label}** session finished.`}
-        actions={completionActions}
-      />
-    );
+    return <Detail markdown={`# Timer Completed\n\n**${label}** session finished.`} actions={completionActions} />;
   }
 
   const state = loadTimerState();

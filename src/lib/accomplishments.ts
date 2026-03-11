@@ -10,6 +10,7 @@ const cache = new Cache({ namespace: "pomodo-timer" });
 export interface AccomplishmentEntry {
   timestamp: number;
   accomplishments: string[];
+  learnings?: string[];
 }
 
 function loadAccomplishmentEntries(): AccomplishmentEntry[] {
@@ -21,7 +22,7 @@ function loadAccomplishmentEntries(): AccomplishmentEntry[] {
       const legacy = JSON.parse(legacyRaw) as unknown;
       const items = Array.isArray(legacy) ? legacy.filter((x): x is string => typeof x === "string") : [];
       if (items.length > 0) {
-        const migrated: AccomplishmentEntry[] = [{ timestamp: Date.now(), accomplishments: items }];
+        const migrated: AccomplishmentEntry[] = [{ timestamp: Date.now(), accomplishments: items, learnings: [] }];
         cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(migrated));
         cache.remove(STORAGE_KEYS.lastAccomplishments);
         return migrated;
@@ -42,15 +43,18 @@ function loadAccomplishmentEntries(): AccomplishmentEntry[] {
         x !== null &&
         typeof (x as AccomplishmentEntry).timestamp === "number" &&
         Array.isArray((x as AccomplishmentEntry).accomplishments),
-    );
+    ).map((x) => ({
+      ...x,
+      learnings: Array.isArray(x.learnings) ? x.learnings : [],
+    }));
   } catch {
     return [];
   }
 }
 
-export function saveAccomplishments(accomplishments: string[]): void {
+export function saveAccomplishments(accomplishments: string[], learnings: string[] = []): void {
   const entries = loadAccomplishmentEntries();
-  entries.unshift({ timestamp: Date.now(), accomplishments });
+  entries.unshift({ timestamp: Date.now(), accomplishments, learnings });
   cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(entries));
 }
 

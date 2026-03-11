@@ -31,9 +31,9 @@
     },
     {
       "name": "pomodo-accomplishments",
-      "title": "Accomplishments",
-      "subtitle": "View all your focus session accomplishments",
-      "description": "View what you accomplished in your last focus session.",
+      "title": "Accomplishments & Learnings",
+      "subtitle": "View all your focus session accomplishments and learnings",
+      "description": "View what you accomplished and learned in your focus sessions.",
       "mode": "view"
     }
   ],

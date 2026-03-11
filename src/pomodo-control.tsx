@@ -139,24 +139,48 @@ export default function Command(props: {
 
   if (completed && completedTimerType) {
     const label = TIMER_LABELS[completedTimerType];
+    const primaryIsBreak = completedTimerType === "focus";
     const completionActions = (
       <ActionPanel>
-        <Action
-          title="Start Focus"
-          icon={Icon.Bolt}
-          onAction={() => {
-            startTimer(TIMER_DURATIONS.focus, "focus");
-            closeMainWindow();
-          }}
-        />
-        <Action
-          title="Start Short Break"
-          icon={Icon.Heart}
-          onAction={() => {
-            startTimer(TIMER_DURATIONS.break, "break");
-            closeMainWindow();
-          }}
-        />
+        {primaryIsBreak ? (
+          <>
+            <Action
+              title="Start Short Break"
+              icon={Icon.Heart}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.break, "break");
+                closeMainWindow();
+              }}
+            />
+            <Action
+              title="Start Focus"
+              icon={Icon.Bolt}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.focus, "focus");
+                closeMainWindow();
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <Action
+              title="Start Focus"
+              icon={Icon.Bolt}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.focus, "focus");
+                closeMainWindow();
+              }}
+            />
+            <Action
+              title="Start Short Break"
+              icon={Icon.Heart}
+              onAction={() => {
+                startTimer(TIMER_DURATIONS.break, "break");
+                closeMainWindow();
+              }}
+            />
+          </>
+        )}
         <Action
           title="Start Long Break"
           icon={Icon.Heart}

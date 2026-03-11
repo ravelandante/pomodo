@@ -67,6 +67,29 @@ export function deleteAllAccomplishments(): void {
   cache.remove(STORAGE_KEYS.lastAccomplishments);
 }
 
+export function deleteItem(
+  timestamp: number,
+  type: "accomplishment" | "learning",
+  index: number,
+): AccomplishmentEntry[] {
+  const entries = loadAccomplishmentEntries();
+  const entryIndex = entries.findIndex((e) => e.timestamp === timestamp);
+  if (entryIndex === -1) return entries;
+
+  const entry = { ...entries[entryIndex] };
+  if (type === "accomplishment") {
+    entry.accomplishments = entry.accomplishments.filter((_, i) => i !== index);
+  } else {
+    entry.learnings = (entry.learnings ?? []).filter((_, i) => i !== index);
+  }
+
+  const nextEntries = entries
+    .map((e, i) => (i === entryIndex ? entry : e))
+    .filter((e) => e.accomplishments.length > 0 || (e.learnings?.length ?? 0) > 0);
+  cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(nextEntries));
+  return nextEntries;
+}
+
 export function getLastAccomplishments(): string[] {
   const entries = loadAccomplishmentEntries();
   return entries[0]?.accomplishments ?? [];

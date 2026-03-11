@@ -13,10 +13,21 @@ import {
   getAccomplishmentEntries,
   formatAccomplishmentDate,
   deleteAllAccomplishments,
+  deleteItem,
 } from "./lib/accomplishments";
 
 export default function Command() {
   const [entries, setEntries] = useState(() => getAccomplishmentEntries());
+
+  async function handleDeleteOne(
+    timestamp: number,
+    type: "accomplishment" | "learning",
+    index: number,
+  ) {
+    const nextEntries = deleteItem(timestamp, type, index);
+    setEntries(nextEntries);
+    await showToast({ style: Toast.Style.Success, title: "Deleted" });
+  }
 
   async function handleDeleteAll() {
     if (
@@ -68,7 +79,13 @@ export default function Command() {
                     <ActionPanel>
                       <Action
                         icon={Icon.Trash}
-                        title="Delete All Accomplishments"
+                        title="Delete"
+                        style={Action.Style.Destructive}
+                        onAction={() => handleDeleteOne(timestamp, "accomplishment", index)}
+                      />
+                      <Action
+                        icon={Icon.Trash}
+                        title="Delete All"
                         style={Action.Style.Destructive}
                         onAction={handleDeleteAll}
                       />
@@ -92,7 +109,13 @@ export default function Command() {
                     <ActionPanel>
                       <Action
                         icon={Icon.Trash}
-                        title="Delete All Accomplishments"
+                        title="Delete"
+                        style={Action.Style.Destructive}
+                        onAction={() => handleDeleteOne(timestamp, "learning", index)}
+                      />
+                      <Action
+                        icon={Icon.Trash}
+                        title="Delete All"
                         style={Action.Style.Destructive}
                         onAction={handleDeleteAll}
                       />

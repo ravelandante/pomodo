@@ -14,7 +14,7 @@ export type TimerType = "focus" | "break" | "longBreak";
 export type TimerAction = "start-focus" | "start-break" | "start-long-break" | "pause" | "resume" | "reset";
 
 export const TIMER_DURATIONS: Record<TimerType, number> = {
-  focus: 3,
+  focus: 25 * 60,
   break: 5 * 60,
   longBreak: 20 * 60,
 };

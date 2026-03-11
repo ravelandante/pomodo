@@ -1,29 +1,31 @@
-import {
-  Action,
-  ActionPanel,
-  Alert,
-  Icon,
-  List,
-  confirmAlert,
-  showToast,
-  Toast,
-} from "@raycast/api";
+import { Action, ActionPanel, Alert, Detail, Icon, List, confirmAlert, showToast, Toast } from "@raycast/api";
 import { useState, type ReactNode } from "react";
 import {
   getAccomplishmentEntries,
   formatAccomplishmentDate,
   deleteAllAccomplishments,
   deleteItem,
+  type AccomplishmentEntry,
 } from "./lib/accomplishments";
+
+function SessionDetail({ entry }: { entry: AccomplishmentEntry }) {
+  const dateStr = formatAccomplishmentDate(entry.timestamp);
+  const learnings = entry.learnings ?? [];
+  const accomplishmentsMarkdown =
+    entry.accomplishments.length > 0
+      ? `## Accomplishments\n${entry.accomplishments.map((a) => `- ${a}`).join("\n")}`
+      : "";
+  const learningsMarkdown =
+    learnings.length > 0 ? `\n\n## Learnings\n${learnings.map((l) => `- ${l}`).join("\n")}` : "";
+  const markdown = `# ${dateStr}\n\n${accomplishmentsMarkdown}${learningsMarkdown}`;
+
+  return <Detail markdown={markdown} />;
+}
 
 export default function Command() {
   const [entries, setEntries] = useState(() => getAccomplishmentEntries());
 
-  async function handleDeleteOne(
-    timestamp: number,
-    type: "accomplishment" | "learning",
-    index: number,
-  ) {
+  async function handleDeleteOne(timestamp: number, type: "accomplishment" | "learning", index: number) {
     const nextEntries = deleteItem(timestamp, type, index);
     setEntries(nextEntries);
     await showToast({ style: Toast.Style.Success, title: "Deleted" });
@@ -77,6 +79,7 @@ export default function Command() {
                   title={accomplishment}
                   actions={
                     <ActionPanel>
+                      <Action.Push icon={Icon.Eye} title="View Session" target={<SessionDetail entry={entry} />} />
                       <Action
                         icon={Icon.Trash}
                         title="Delete"
@@ -107,6 +110,7 @@ export default function Command() {
                   title={learning}
                   actions={
                     <ActionPanel>
+                      <Action.Push icon={Icon.Eye} title="View Session" target={<SessionDetail entry={entry} />} />
                       <Action
                         icon={Icon.Trash}
                         title="Delete"

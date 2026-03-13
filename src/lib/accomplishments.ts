@@ -1,11 +1,6 @@
-import { Cache } from "@raycast/api";
+import { LocalStorage } from "@raycast/api";
 
-const STORAGE_KEYS = {
-  lastAccomplishments: "pomodo-last-accomplishments",
-  accomplishmentsHistory: "pomodo-accomplishments-history",
-};
-
-const cache = new Cache({ namespace: "pomodo-timer" });
+const STORAGE_KEY = "pomodo-accomplishments-history";
 
 export interface AccomplishmentEntry {
   timestamp: number;
@@ -13,25 +8,8 @@ export interface AccomplishmentEntry {
   learnings?: string[];
 }
 
-function loadAccomplishmentEntries(): AccomplishmentEntry[] {
-  const legacyRaw = cache.get(STORAGE_KEYS.lastAccomplishments);
-  const historyRaw = cache.get(STORAGE_KEYS.accomplishmentsHistory);
-
-  if (!historyRaw && legacyRaw) {
-    try {
-      const legacy = JSON.parse(legacyRaw) as unknown;
-      const items = Array.isArray(legacy) ? legacy.filter((x): x is string => typeof x === "string") : [];
-      if (items.length > 0) {
-        const migrated: AccomplishmentEntry[] = [{ timestamp: Date.now(), accomplishments: items, learnings: [] }];
-        cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(migrated));
-        cache.remove(STORAGE_KEYS.lastAccomplishments);
-        return migrated;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
+async function loadAccomplishmentEntries(): Promise<AccomplishmentEntry[]> {
+  const historyRaw = await LocalStorage.getItem<string>(STORAGE_KEY);
   if (!historyRaw) return [];
 
   try {
@@ -54,33 +32,32 @@ function loadAccomplishmentEntries(): AccomplishmentEntry[] {
   }
 }
 
-export function saveAccomplishments(accomplishments: string[], learnings: string[] = []): void {
-  const entries = loadAccomplishmentEntries();
+export async function saveAccomplishments(accomplishments: string[], learnings: string[] = []): Promise<void> {
+  const entries = await loadAccomplishmentEntries();
   entries.unshift({ timestamp: Date.now(), accomplishments, learnings });
-  cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(entries));
+  await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
-export function getAccomplishmentEntries(): AccomplishmentEntry[] {
+export async function getAccomplishmentEntries(): Promise<AccomplishmentEntry[]> {
   return loadAccomplishmentEntries();
 }
 
-export function deleteAllAccomplishments(): void {
-  cache.remove(STORAGE_KEYS.accomplishmentsHistory);
-  cache.remove(STORAGE_KEYS.lastAccomplishments);
+export async function deleteAllAccomplishments(): Promise<void> {
+  await LocalStorage.removeItem(STORAGE_KEY);
 }
 
-export function deleteEntry(timestamp: number): AccomplishmentEntry[] {
-  const entries = loadAccomplishmentEntries().filter((e) => e.timestamp !== timestamp);
-  cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(entries));
+export async function deleteEntry(timestamp: number): Promise<AccomplishmentEntry[]> {
+  const entries = (await loadAccomplishmentEntries()).filter((e) => e.timestamp !== timestamp);
+  await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   return entries;
 }
 
-export function deleteItem(
+export async function deleteItem(
   timestamp: number,
   type: "accomplishment" | "learning",
   index: number,
-): AccomplishmentEntry[] {
-  const entries = loadAccomplishmentEntries();
+): Promise<AccomplishmentEntry[]> {
+  const entries = await loadAccomplishmentEntries();
   const entryIndex = entries.findIndex((e) => e.timestamp === timestamp);
   if (entryIndex === -1) return entries;
 
@@ -94,12 +71,12 @@ export function deleteItem(
   const nextEntries = entries
     .map((e, i) => (i === entryIndex ? entry : e))
     .filter((e) => e.accomplishments.length > 0 || (e.learnings?.length ?? 0) > 0);
-  cache.set(STORAGE_KEYS.accomplishmentsHistory, JSON.stringify(nextEntries));
+  await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(nextEntries));
   return nextEntries;
 }
 
-export function getLastAccomplishments(): string[] {
-  const entries = loadAccomplishmentEntries();
+export async function getLastAccomplishments(): Promise<string[]> {
+  const entries = await loadAccomplishmentEntries();
   return entries[0]?.accomplishments ?? [];
 }
 

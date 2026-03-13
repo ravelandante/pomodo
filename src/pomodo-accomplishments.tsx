@@ -10,7 +10,7 @@ import {
   Toast,
   useNavigation,
 } from "@raycast/api";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   getAccomplishmentEntries,
   formatAccomplishmentDate,
@@ -74,16 +74,24 @@ function SessionDetail({
 }
 
 export default function Command() {
-  const [entries, setEntries] = useState(() => getAccomplishmentEntries());
+  const [entries, setEntries] = useState<AccomplishmentEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getAccomplishmentEntries().then((e) => {
+      setEntries(e);
+      setIsLoading(false);
+    });
+  }, []);
 
   async function handleDeleteOne(timestamp: number, type: "accomplishment" | "learning", index: number) {
-    const nextEntries = deleteItem(timestamp, type, index);
+    const nextEntries = await deleteItem(timestamp, type, index);
     setEntries(nextEntries);
     await showToast({ style: Toast.Style.Success, title: "Deleted" });
   }
 
-  function handleDeleteSession(timestamp: number) {
-    const nextEntries = deleteEntry(timestamp);
+  async function handleDeleteSession(timestamp: number) {
+    const nextEntries = await deleteEntry(timestamp);
     setEntries(nextEntries);
     showToast({ style: Toast.Style.Success, title: "Session deleted" });
   }
@@ -101,9 +109,17 @@ export default function Command() {
     ) {
       return;
     }
-    deleteAllAccomplishments();
+    await deleteAllAccomplishments();
     setEntries([]);
     await showToast({ style: Toast.Style.Success, title: "All accomplishments deleted" });
+  }
+
+  if (isLoading) {
+    return (
+      <List isLoading={true}>
+        <List.EmptyView icon={Icon.CheckCircle} title="Loading…" />
+      </List>
+    );
   }
 
   if (entries.length === 0) {

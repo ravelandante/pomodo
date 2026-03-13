@@ -26,7 +26,7 @@ function CompletedFocusForm({ timerType, completionActions }: { timerType: Timer
 
   const { handleSubmit, itemProps } = useForm<AccomplishmentFormValues>({
     initialValues: { accomplishments: "", learnings: "" },
-    onSubmit(values) {
+    async onSubmit(values) {
       const accomplishmentLines = values.accomplishments
         .split("\n")
         .map((s) => s.trim())
@@ -35,11 +35,11 @@ function CompletedFocusForm({ timerType, completionActions }: { timerType: Timer
         .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
-      saveAccomplishments(accomplishmentLines, learningLines);
+      await saveAccomplishments(accomplishmentLines, learningLines);
       setSavedAccomplishments(accomplishmentLines);
       setSavedLearnings(learningLines);
       setSubmitted(true);
-      showToast({ style: Toast.Style.Success, title: "Accomplishments and learnings saved" });
+      await showToast({ style: Toast.Style.Success, title: "Accomplishments and learnings saved" });
     },
   });
 

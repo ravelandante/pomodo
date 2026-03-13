@@ -37,16 +37,18 @@ function loadAccomplishmentEntries(): AccomplishmentEntry[] {
   try {
     const parsed = JSON.parse(historyRaw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (x): x is AccomplishmentEntry =>
-        typeof x === "object" &&
-        x !== null &&
-        typeof (x as AccomplishmentEntry).timestamp === "number" &&
-        Array.isArray((x as AccomplishmentEntry).accomplishments),
-    ).map((x) => ({
-      ...x,
-      learnings: Array.isArray(x.learnings) ? x.learnings : [],
-    }));
+    return parsed
+      .filter(
+        (x): x is AccomplishmentEntry =>
+          typeof x === "object" &&
+          x !== null &&
+          typeof (x as AccomplishmentEntry).timestamp === "number" &&
+          Array.isArray((x as AccomplishmentEntry).accomplishments),
+      )
+      .map((x) => ({
+        ...x,
+        learnings: Array.isArray(x.learnings) ? x.learnings : [],
+      }));
   } catch {
     return [];
   }
